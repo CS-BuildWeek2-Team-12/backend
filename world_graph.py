@@ -66,6 +66,7 @@ class Room:
     def get_xy(self):
         return [self.x, self.y]
 
+
 class World:
 
     def __init__(self, start_room):
@@ -74,8 +75,23 @@ class World:
         self.room_grid = []
         self.grid_size = 0
 
-    def add_room(self, room_id, title, description, elevation, terrain, available_directions, x, y):
-        room = Room(room_id=room_id)
+        self.last_added_room_obj = self.start_room
+
+    def add_room(self,
+                 room_id,
+                 title,
+                 description,
+                 elevation,
+                 terrain,
+                 available_directions,
+                 x,
+                 y,
+                 room_obj=None):
+
+        if room_obj is None:
+            room = Room(room_id=room_id)
+        else:
+            room = room_obj
         room.title = title
         room.description = description
         room.elevation = elevation
@@ -84,6 +100,16 @@ class World:
         room.x = x
         room.y = y
 
+        self.rooms[room_id] = room
+        self.last_added_room_obj = room
+
+        return
+
+    def get_room_by_id(self, room_id):
+        return self.rooms[room_id]
+
+    def get_last_added_room(self):
+        return self.last_added_room_obj
 
     def generate_grid(self):
         return 'add functionality'
