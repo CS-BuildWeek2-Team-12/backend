@@ -2,11 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="d0797f5f-41ab-4c7f-b5b6-c713ed7ff91d" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/traverser2.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/traverser2_load.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/communication.py" beforeDir="false" afterPath="$PROJECT_DIR$/communication.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/traverse.py" beforeDir="false" afterPath="$PROJECT_DIR$/traverse.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/world_graph.py" beforeDir="false" afterPath="$PROJECT_DIR$/world_graph.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/world_b.pkl" beforeDir="false" afterPath="$PROJECT_DIR$/world_b.pkl" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -37,6 +35,11 @@
         <option name="myModuleName" value="cs_final_bw" />
       </console-settings>
     </option>
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$" />
+    </key>
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
