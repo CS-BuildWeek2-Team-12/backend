@@ -33,7 +33,9 @@ class Calls:
         print(f'started in room {res["room_id"]}')
         return self.world.rooms[res['room_id']]
 
-    def traverse_one(self, direction, previous_id, id_predict=None,):
+    def traverse_one(self, direction,
+                     # previous_id,
+                     id_predict=None,):
 
         if id_predict is None:
             headers = {
@@ -83,7 +85,7 @@ class Calls:
                                     y=coordinates[1],
                                     )
             room = self.world.rooms[res['room_id']]
-            self.world.rooms[previous_id].connect_rooms(direction, room)
+            # self.world.rooms[previous_id].connect_rooms(direction, room)
             sleep(res['cooldown'])
             print(f"travelled {direction} to room {res['room_id']}")
             return self.world.rooms[res['room_id']]
@@ -98,3 +100,64 @@ class Calls:
         else:
             print(f"There was another error {response.status_code}")
             return False
+
+    def check_for_treasure(self):
+        headers = {
+            'Authorization': f'Token {self.apikey}',
+        }
+
+        response = requests.get('https://lambda-treasure-hunt.herokuapp.com/api/adv/init/', headers=headers)
+        res = response.json()
+        coordinates = [int(x.strip('()')) for x in res['coordinates'].split(',')]
+        sleep(res['cooldown'])
+
+        print(res['items'])
+        return res
+
+    def pick_up_treasure(self):
+        headers = {
+            'Authorization': f'Token {self.apikey}',
+            'Content-Type': 'application/json',
+            }
+
+        data = '{"name":"treasure"}'
+
+        response = requests.post('https://lambda-treasure-hunt.herokuapp.com/api/adv/take/', headers=headers, data=data)
+        res = response.json()
+        sleep(res['cooldown'])
+        print(f'{res["messages"]}')
+        return
+
+    def sell_treasure(self):
+        headers = {
+            'Authorization': f'Token {self.apikey}',
+            'Content-Type': 'application/json',
+            }
+
+        data = '{"name":"treasure"}'
+
+        response = requests.post('https://lambda-treasure-hunt.herokuapp.com/api/adv/sell/', headers=headers, data=data)
+        res = response.json()
+        sleep(res['cooldown'])
+
+        headers = {
+            'Authorization': f'Token {self.apikey}',
+            'Content-Type': 'application/json',
+            }
+
+        data = '{"name":"treasure", "confirm":"yes"}'
+
+        response = requests.post('https://lambda-treasure-hunt.herokuapp.com/api/adv/sell/', headers=headers, data=data)
+        res = response.json()
+        sleep(res['cooldown'])
+        return
+
+    def status_inventory(self):
+        headers = {
+            'Authorization': f'Token {self.apikey}',
+            'Content-Type': 'application/json',
+        }
+        response = requests.post("https://lambda-treasure-hunt.herokuapp.com/api/adv/status/", headers= headers)
+        res = response.json()
+        sleep(res['cooldown'])
+        return res
