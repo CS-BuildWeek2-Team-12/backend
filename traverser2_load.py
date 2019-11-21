@@ -70,7 +70,7 @@ class Traverser:
                             room_in_d = current_room.getRoomInDirection(d).room_id
                         else:
                             room_in_d = None
-                        if (room_in_d is not None) or (room_in_d not in self.visited):
+                        if (room_in_d is None) or (room_in_d not in self.visited):
                             next_dir = d
                             current_room.traveled_directions.add(d)
                             found_dir = True
