@@ -14,13 +14,13 @@ class Calls:
 
     def initialize_with_api(self):
         headers = {
-            'Authorization': 'Token 7a375b52bdc410eebbc878ed3e58b2e94a8cb607',
+            'Authorization': f'Token {self.apikey}',
         }
 
         response = requests.get('https://lambda-treasure-hunt.herokuapp.com/api/adv/init/', headers=headers)
         res = response.json()
         coordinates = [int(x.strip('()')) for x in res['coordinates'].split(',')]
-
+        sleep(res['cooldown'])
         self.world.add_room(room_id=res['room_id'],
                             title=res['title'],
                             description=res['description'],
@@ -30,9 +30,10 @@ class Calls:
                             x=coordinates[0],
                             y=coordinates[1],
                             )
-        return self.world.last_added_room_obj
+        print(f'started in room {res["room_id"]}')
+        return self.world.rooms[res['room_id']]
 
-    def traverse_one(self, direction, id_predict=None):
+    def traverse_one(self, direction, previous_id, id_predict=None,):
 
         if id_predict is None:
             headers = {
@@ -43,32 +44,49 @@ class Calls:
             data = "{" + f'"direction":"{direction}"' "}"
 
         else:
+            print(id_predict)
             headers = {
                 'Authorization': f'Token {self.apikey}',
                 'Content-Type': 'application/json',
             }
 
-            data = "{" + f'"direction":"{direction}","next_room_id":"{id_predict}' "}"
+            data = "{" + f'"direction":"{direction}","next_room_id":"{id_predict}"' + "}"
 
-        response = requests.post('https://lambda-treasure-hunt.herokuapp.com/api/adv/move/',
-                                 headers=headers,
-                                 data=data)
+        for _ in range(5):
+            try:
+                response = requests.post('https://lambda-treasure-hunt.herokuapp.com/api/adv/move/',
+                                         headers=headers,
+                                         data=data)
+                if response.status_code == 200:
+                    break
+                elif response.status_code != 500:
+                    print(response.status_code)
+                    res1 = response.json()
+                    sleep(int(res1['cooldown']) + 6)
+            except requests.exceptions.RequestException as e:
+                print(e)
+                continue
+
 
         if response.status_code == 200:
             res = response.json()
             coordinates = [int(x.strip('()')) for x in res['coordinates'].split(',')]
 
-            self.world.add_room(room_id=res['room_id'],
-                                title=res['title'],
-                                description=res['description'],
-                                elevation=res['elevation'],
-                                terrain=res['terrain'],
-                                available_directions=res['exits'],
-                                x=coordinates[0],
-                                y=coordinates[1],
-                                )
+            if res['room_id'] not in self.world.rooms.keys():
+                self.world.add_room(room_id=res['room_id'],
+                                    title=res['title'],
+                                    description=res['description'],
+                                    elevation=res['elevation'],
+                                    terrain=res['terrain'],
+                                    available_directions=res['exits'],
+                                    x=coordinates[0],
+                                    y=coordinates[1],
+                                    )
+            room = self.world.rooms[res['room_id']]
+            self.world.rooms[previous_id].connect_rooms(direction, room)
             sleep(res['cooldown'])
-            return self.world.last_added_room_obj
+            print(f"travelled {direction} to room {res['room_id']}")
+            return self.world.rooms[res['room_id']]
 
         elif response.status_code == 400:
             res = response.json()

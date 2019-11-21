@@ -6,7 +6,7 @@ class Room:
         self.elevation = None
         self.terrain = None
         self.available_directions = []
-        self.traveled_directions = []
+        self.traveled_directions = set()
         self.n_to = None
         self.s_to = None
         self.e_to = None
@@ -34,6 +34,7 @@ class Room:
         return f"Exits in directions: [{' ,'.join(self.get_exits())}]"
 
     def connect_rooms(self, direction, room):
+        # print(f"connecting room {self.room_id} in {direction} to {room.room_id}")
         if direction == 'n':
             self.n_to = room
             room.s_to = self
@@ -56,12 +57,12 @@ class Room:
         if getattr(self, ddict[direction]) is not None:
             return getattr(self, ddict[direction])
         else:
-            if direction in self.available_directions:
-                #traverse
-                print('add functionality')
-                return 'add functionality'
-            else:
-                return None
+            # if direction in self.available_directions:
+            #     #traverse
+            #     print('add functionality')
+            #     return 'add functionality'
+            # else:
+            return None
 
     def get_xy(self):
         return [self.x, self.y]
@@ -69,13 +70,18 @@ class Room:
 
 class World:
 
-    def __init__(self, start_room):
-        self.start_room = start_room
+    def __init__(self):
+        self.start_room = None
         self.rooms = {}
         self.room_grid = []
         self.grid_size = 0
+        self.last_added_room_obj = None
 
+    def add_starting_room(self, start_room):
+        self.start_room = start_room
         self.last_added_room_obj = self.start_room
+        self.rooms[self.start_room.room_id] = self.start_room
+        return
 
     def add_room(self,
                  room_id,

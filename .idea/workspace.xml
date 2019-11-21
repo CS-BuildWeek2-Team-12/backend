@@ -2,8 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="d0797f5f-41ab-4c7f-b5b6-c713ed7ff91d" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/communication.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/traverser2.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/communication.py" beforeDir="false" afterPath="$PROJECT_DIR$/communication.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/traverse.py" beforeDir="false" afterPath="$PROJECT_DIR$/traverse.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/world_graph.py" beforeDir="false" afterPath="$PROJECT_DIR$/world_graph.py" afterDir="false" />
     </list>
@@ -26,6 +27,7 @@
   <component name="ProjectId" id="1ToUYbUHuLfdUVIPVevOtBEQI75" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="PropertiesComponent">
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="settings.editor.selected.configurable" value="PyConsoleConfigurable.Python Console" />
   </component>
   <component name="PyConsoleOptionsProvider">
@@ -66,7 +68,9 @@
       <map>
         <entry key="MAIN">
           <value>
-            <State />
+            <State>
+              <option name="COLUMN_ORDER" />
+            </State>
           </value>
         </entry>
       </map>

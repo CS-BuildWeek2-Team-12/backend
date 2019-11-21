@@ -13,11 +13,12 @@ class Traverser:
     starting_room: Room
     world: World
 
-    def __init__(self, world, apikey=config("APIKEY")):
-        self.world = world
+    def __init__(self,  apikey=config("APIKEY")):
+        self.world = World()
         self.calls = Calls(world=self.world)
         self.visited = set()
-        self.starting_room = self.calls.initialize_with_api()
+        self.world.add_starting_room(self.calls.initialize_with_api())
+        self.starting_room = self.world.start_room
         self.path = []
         self.apikey = apikey
         self.stack = Stack()
@@ -35,42 +36,58 @@ class Traverser:
                 open_doors = self.starting_room.available_directions
                 next_dir = open_doors.pop()
                 ceop = self.starting_room
-                current_room = self.calls.traverse_one(direction=next_dir)
-                ceop.connect_rooms(next_dir, current_room)
+
+                current_room.traveled_directions.add(next_dir)
+                current_room = self.calls.traverse_one(direction=next_dir,
+                                                       previous_id=current_room.room_id)
+                ceop.connect_rooms(reverse[next_dir], current_room)
                 start = False
-            elif next_dir in current_room.traveled_directions:
-                id_next = current_room.getRoomInDirection(next_dir).room_id
+
+            elif current_room.getRoomInDirection(next_dir) is not None:
+                #id_next = current_room.getRoomInDirection(next_dir).room_id
                 prev_room = current_room
-                current_room = self.calls.traverse_one(next_dir)
+                current_room = self.calls.traverse_one(direction=next_dir,
+                                                       previous_id=prev_room.room_id,
+                                                       id_predict=current_room.getRoomInDirection(next_dir).room_id)
+                prev_room.traveled_directions.add(next_dir)
                 ceop = self.starting_room
                 for d in self.path:
                     ceop = ceop.getRoomInDirection(d)
             else:
-                id_next = current_room.getRoomInDirection(next_dir).room_id
+                #id_next = current_room.getRoomInDirection(next_dir).room_id
                 prev_room = current_room
-                current_room = self.calls.traverse_one(next_dir)
+                current_room = self.calls.traverse_one(direction=next_dir,
+                                                       previous_id=prev_room.room_id)
+                prev_room.traveled_directions.add(next_dir)
                 prev_room.connect_rooms(next_dir, current_room)
                 ceop = self.starting_room
                 for d in self.path:
                     ceop = ceop.getRoomInDirection(d)
-
-            if current_room not in self.visited:
+            if open_doors is not None:
+                print(f"open_doors: {open_doors}")
+            if current_room.room_id not in self.visited:
                 current_room: Room
-                open_doors = current_room.get_exits()
-                self.visited.add(current_room)
+                open_doors = set(current_room.available_directions) - set(current_room.traveled_directions)
+                self.visited.add(current_room.room_id)
                 self.path.append(next_dir)
                 if len(self.visited) == 500:
                     return self.path
                 elif len(current_room.available_directions) > 1:
                     next_dir = open_doors.pop()
+                    self.visited.add(current_room.room_id)
                 elif len(current_room.available_directions) == 1:
                     path_back = self.path_to_closest_unvisited(current_room)
                     for d in path_back[:-1]:
                         if current_room.getRoomInDirection(d) is not None:
-                            current_room = self.calls.traverse_one(d, current_room.getRoomInDirection(d).room_id)
+                            current_room.traveled_directions.add(d)
+                            current_room = self.calls.traverse_one(direction=d,
+                                                                   previous_id=prev_room.getRoomInDirection(d).room_id,
+                                                                   id_predict=current_room.getRoomInDirection(d).room_id)
                             self.path.append(d)
                         else:
-                            current_room = self.calls.traverse_one(d)
+                            current_room.traveled_directions.add(d)
+                            current_room = self.calls.traverse_one(direction=d,
+                                                                   previous_id=prev_room.getRoomInDirection(d).room_id)
                             self.path.append(d)
 
                     next_dir = path_back[-1]
@@ -78,18 +95,28 @@ class Traverser:
                     print("Error")
             else:
                 if (len(current_room.get_exits()) > 1) & (len(open_doors) > 0):
+                    print('returned')
                     # if current room is has been traversed
-                    current_room = self.calls.traverse_one(reverse[next_dir])
+                    current_room.traveled_directions.add(reverse[next_dir])
+                    current_room = self.calls.traverse_one(direction=reverse[next_dir],
+                                                           previous_id=current_room.getRoomInDirection(reverse[next_dir]).room_id)
                     next_dir = open_doors.pop()
                 elif len(open_doors) == 0:
                     path_back = self.path_to_closest_unvisited(current_room)
-                    current_room = self.calls.traverse_one(reverse[next_dir])
+                    current_room.traveled_directions.add(reverse[next_dir])
+                    current_room = self.calls.traverse_one(direction=reverse[next_dir],
+                                                           previous_id=current_room.getRoomInDirection(reverse[next_dir]).room_id)
                     for d in path_back[:-1]:
                         if current_room.getRoomInDirection(d) is not None:
-                            current_room = self.calls.traverse_one(d, current_room.getRoomInDirection(d).room_id)
+                            current_room.traveled_directions.add(d)
+                            current_room = self.calls.traverse_one(direction=d,
+                                                                   previous_id=current_room.getRoomInDirection(d).room_id,
+                                                                   id_predict=current_room.getRoomInDirection(d).room_id)
                             self.path.append(d)
                         else:
-                            current_room = self.calls.traverse_one(d)
+                            current_room.traveled_directions.add(d)
+                            current_room = self.calls.traverse_one(direction=d,
+                                                                   previous_id=current_room.getRoomInDirection(d).room_id)
                             self.path.append(d)
                     next_dir = path_back[-1]
         return self.path
@@ -114,21 +141,22 @@ class Traverser:
                 current_room = queue.dequeue()
                 start = False
             open_doors = current_room.get_exits()
-            if current_room not in visited_local:
+            if current_room.room_id not in visited_local:
                 if (len(current_room.traveled_directions) < len(current_room.available_directions) or
                         (len(self.visited.union(visited_local)) == 500)):
-                    visited_local.add(current_room)
-                    not_travelled = set(current_room.traveled_directions) - set(current_room.available_directions)
+                    visited_local.add(current_room.room_id)
+                    not_travelled = set(current_room.available_directions) - set(current_room.traveled_directions)
                     current_path.append(not_travelled.pop())
                     paths.append(current_path)
                     return current_path
                 else:
-                    visited_local.add(current_room)
+                    visited_local.add(current_room.room_id)
                     for next_room in open_doors:
                         cpath_copy = current_path.copy()
                         cpath_copy.append(next_room)
                         queue.enqueue(cpath_copy)
-        return min(paths)
+        print(paths)
+        return paths.pop()
 
 
     # def initialize_with_api(self):
